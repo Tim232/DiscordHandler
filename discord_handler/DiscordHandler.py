@@ -2,9 +2,9 @@ import logging
 from socket import gethostname
 
 try:
-    import requests
+    import requests_async as requests
 except ImportError as ex:
-    print("Please Install requests")
+    print("Please Install requests-async")
     raise ImportError(ex)
 
 
@@ -39,9 +39,9 @@ class DiscordHandler(logging.Handler):
             'User-Agent': self._agent,
         }
 
-    def write_to_discord(self, message):
+    async def write_to_discord(self, message):
 
-        request = requests.post(self._url,
+        request = await requests.post(self._url,
                                 headers=self._header,
                                 data={
                                     "content": message
@@ -59,11 +59,11 @@ class DiscordHandler(logging.Handler):
                 % request.status_code, request.text
             )
 
-    def emit(self, record):
+    async def emit(self, record):
         try:
             msg = self.format(record)
             users = '\n'.join(f'<@{user}>' for user in self._notify_users)
 
-            self.write_to_discord("```%s```%s" % (msg, users))
+            await self.write_to_discord("```%s```%s" % (msg, users))
         except Exception:
             self.handleError(record)
